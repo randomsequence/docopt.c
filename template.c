@@ -30,9 +30,9 @@ $usage_pattern;
 
 typedef struct {
     const char *name;
-    char *value;
+    const char *value;
     int count;
-    char **array;
+    const char **array;
 } Argument;
 
 typedef struct {
@@ -46,7 +46,7 @@ typedef struct {
     const char *olong;
     bool argcount;
     bool value;
-    char *argument;
+    const char *argument;
 } Option;
 
 typedef struct {
@@ -65,12 +65,12 @@ typedef struct {
 
 typedef struct Tokens {
     int argc;
-    char **argv;
+    const char **argv;
     int i;
-    char *current;
+    const char *current;
 } Tokens;
 
-Tokens tokens_new(int argc, char **argv) {
+Tokens tokens_new(int argc, const char **argv) {
     Tokens ts = {argc, argv, 0, argv[0]};
     return ts;
 }
@@ -115,11 +115,13 @@ int parse_long(Tokens *ts, Elements *elements) {
     Option *options = elements->options;
 
     if (eq) {
-        len_prefix = (eq-(ts->current))/sizeof(char);
+        len_prefix = (int) (eq-(ts->current))/sizeof(char);
     }
     else {
-        len_prefix = strlen(ts->current);
+        len_prefix = (int) strlen(ts->current);
     }
+    len_prefix = (int) (eq-(ts->current))/sizeof(char);
+
     for (i=0; i < n_options; i++) {
         option = &options[i];
         if (!strncmp(ts->current, option->olong, len_prefix))
@@ -155,7 +157,7 @@ int parse_long(Tokens *ts, Elements *elements) {
 }
 
 int parse_shorts(Tokens *ts, Elements *elements) {
-    char *raw;
+    const char *raw;
     int i;
     int n_options = elements->n_options;
     Option *option = NULL;
@@ -285,7 +287,7 @@ int elems_to_args(Elements *elements, DocoptArgs *args, bool help,
                   const char *version){
     Command *command;
     Argument *argument;
-    Option *option;
+    Option *option = NULL;
     int i;
 
     // fix gcc-related compiler warnings (unused)
@@ -321,7 +323,7 @@ int elems_to_args(Elements *elements, DocoptArgs *args, bool help,
  * Main docopt function
  */
 
-DocoptArgs docopt(int argc, char *argv[], bool help, const char *version) {
+DocoptArgs docopt(int argc, const char *argv[], bool help, const char *version) {
     DocoptArgs args = {$defaults
         usage_pattern, help_message
     };
